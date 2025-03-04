@@ -1,14 +1,12 @@
-# Welcome to your CDK TypeScript project
+# MQTT->firehose->s3の構成をCDKで構築する
 
-This is a blank project for CDK development with TypeScript.
+## 今回やること
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
-
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `npx cdk deploy`  deploy this stack to your default AWS account/region
-* `npx cdk diff`    compare deployed stack with current state
-* `npx cdk synth`   emits the synthesized CloudFormation template
+- IoT Core -> Firehose -> S3の構成でデータをS3に保存する
+  - データはparquet形式で保存する
+  - データはSNAPPYで圧縮する
+- データはathenaからクエリできるようにする
+  - パーティションを用いてコストとパフォーマンスを最適化する
+  - パーティションのキーは日付（JST）を用いる
+- CDKで構築する
+  - 
