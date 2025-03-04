@@ -9,14 +9,15 @@ type Data = {
   metrics: Record<string, number>;
 };
 
-/**
- * JSTでパーティションが作成されることを確認するために、
- * JSTの2025年1月1日を基準日とする
- */
-let date = new Date('2025-01-01T00:00:00+09:00');
-const endDate = new Date('2025-04-01T00:00:00+09:00');
 
 export const handler = async (): Promise<void> => {
+  /**
+   * JSTでパーティションが作成されることを確認するために、
+   * JSTの2025年1月1日を基準日とする
+   */
+  let date = new Date('2025-01-01T00:00:00+09:00');
+  const endDate = new Date('2025-04-01T00:00:00+09:00');
+
   /** 実行都度、適当なデバイス名でデータを送信する */
   const deviceName = `device-${randomUUID()}`;
 
