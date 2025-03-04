@@ -1,20 +1,20 @@
 import type {
-	FirehoseTransformationEvent,
-	FirehoseTransformationResult,
-	FirehoseTransformationResultRecord,
+  FirehoseTransformationEvent,
+  FirehoseTransformationResult,
+  FirehoseTransformationResultRecord,
 } from "aws-lambda";
 
 type Data = {
-	deviceName: string;
-	messageTime: number;
-	metrics: Record<string, number>;
+  deviceName: string;
+  messageTime: number;
+  metrics: Record<string, number>;
 };
 
 type EnrichedData = Omit<Data, "messageTime"> & {
-	date: string;
-	hour: string;
-	minute: string;
-	second: string;
+  date: string;
+  hour: string;
+  minute: string;
+  second: string;
 };
 
 /**
@@ -28,27 +28,30 @@ type EnrichedData = Omit<Data, "messageTime"> & {
  * - 日付ライブラリを使わない
  */
 export const handler = async (
-	event: Pick<FirehoseTransformationEvent, "records">,
+  event: Pick<FirehoseTransformationEvent, "records">,
 ): Promise<FirehoseTransformationResult> => {
-	const records = event.records.map((record) => {
-		// JSON.parse後のzod検証は行わない。
-		const data: Data = JSON.parse(
-			Buffer.from(record.data, "base64").toString(),
-		);
+  const records = event.records.map((record) => {
+    // JSON.parse後のzod検証は行わない。
+    const data: Data = JSON.parse(
+      Buffer.from(record.data, "base64").toString(),
+    );
 
-		const enrichedData = enrich(data);
-		const partitionKeys = getPartitionKeys(enrichedData);
+    const enrichedData = enrich(data);
+    const partitionKeys = getPartitionKeys(enrichedData);
 
-		return {
-			recordId: record.recordId,
-			result: "Ok",
-			data: Buffer.from(getJSonLine(enrichedData)).toString("base64"),
-			metadata: { partitionKeys },
-		} satisfies FirehoseTransformationResultRecord;
-	});
+    return {
+      recordId: record.recordId,
+      result: "Ok",
+      data: Buffer.from(getJSonLine(enrichedData)).toString("base64"),
+      metadata: { partitionKeys },
+    } satisfies FirehoseTransformationResultRecord;
+  });
 
-	return { records };
+  return { records };
 };
+
+// ===================================================
+// libs
 
 /**
  * データのエンリッチメント
@@ -58,35 +61,35 @@ export const handler = async (
  * このデータはGlue Tableのスキーマと一致する必要がある
  */
 function enrich(data: Data): EnrichedData {
-	const { messageTime, deviceName, metrics } = data;
+  const { messageTime, deviceName, metrics } = data;
 
-	const datetime = new Date(messageTime);
+  const datetime = new Date(messageTime);
 
-	const year = datetime.getFullYear().toString();
-	const month = formatTwoDigits(datetime.getMonth() + 1);
-	const day = formatTwoDigits(datetime.getDate());
-	const hour = formatTwoDigits(datetime.getHours());
-	const minute = formatTwoDigits(datetime.getMinutes());
-	const second = formatTwoDigits(datetime.getSeconds());
+  const year = datetime.getFullYear().toString();
+  const month = formatTwoDigits(datetime.getMonth() + 1);
+  const day = formatTwoDigits(datetime.getDate());
+  const hour = formatTwoDigits(datetime.getHours());
+  const minute = formatTwoDigits(datetime.getMinutes());
+  const second = formatTwoDigits(datetime.getSeconds());
 
-	const date = `${year}/${month}/${day}`;
+  const date = `${year}/${month}/${day}`;
 
-	const enrichedData = {
-		deviceName,
-		metrics,
-		date,
-		hour,
-		minute,
-		second,
-	};
-	return enrichedData;
+  const enrichedData = {
+    deviceName,
+    metrics,
+    date,
+    hour,
+    minute,
+    second,
+  };
+  return enrichedData;
 }
 
 function getPartitionKeys(enrichedData: EnrichedData) {
-	return {
-		deviceName: enrichedData.deviceName,
-		date: enrichedData.date,
-	};
+  return {
+    deviceName: enrichedData.deviceName,
+    date: enrichedData.date,
+  };
 }
 
 /**
@@ -94,9 +97,9 @@ function getPartitionKeys(enrichedData: EnrichedData) {
  * 末尾の改行がとても大事。消さないでね。
  */
 function getJSonLine(data: EnrichedData): string {
-	return `${JSON.stringify(data)}\n`;
+  return `${JSON.stringify(data)}\n`;
 }
 
 function formatTwoDigits(date: number): string {
-	return date.toString().padStart(2, "0");
+  return date.toString().padStart(2, "0");
 }

@@ -173,18 +173,23 @@ new iot.TopicRule(stack, "TopicRule", {
 });
 
 // ================================================
-// デプロイ後にデータを投入する
+// 擬似的にIoTデータを投入する
 
-new cdk.triggers.Trigger(stack, "Trigger", {
-  handler: new NodejsFunction(stack, "DataPublisher", {
-    runtime: lambda.Runtime.NODEJS_22_X,
-    architecture: lambda.Architecture.ARM_64,
+const dataPublisher = new NodejsFunction(stack, "DataPublisher", {
+  runtime: lambda.Runtime.NODEJS_22_X,
+  architecture: lambda.Architecture.ARM_64,
+  timeout: cdk.Duration.minutes(15),
+  initialPolicy: [
+    new iam.PolicyStatement({
+      actions: ["iot:Publish"],
+      resources: ["*"],
+    }),
+  ]
+});
+
+for (const num of [...Array(3).keys()]) {
+  new cdk.triggers.Trigger(stack, `Trigger${num}`, {
     timeout: cdk.Duration.minutes(15),
-    initialPolicy: [
-      new iam.PolicyStatement({
-        actions: ["iot:Publish"],
-        resources: ["*"],
-      }),
-    ]
+    handler: dataPublisher,
   })
-})
+}
