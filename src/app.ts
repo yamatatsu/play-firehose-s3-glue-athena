@@ -43,9 +43,7 @@ const glueTable = new glue.S3Table(stack, "S3Table", {
     { name: "date", type: glue.Schema.STRING },
   ],
   columns: [
-    { name: "hour", type: glue.Schema.STRING },
-    { name: "minute", type: glue.Schema.STRING },
-    { name: "second", type: glue.Schema.STRING },
+    { name: "timestamp", type: glue.Schema.TIMESTAMP },
     { name: "metrics", type: glue.Schema.map(glue.Schema.STRING, glue.Schema.FLOAT) },
   ],
   bucket,

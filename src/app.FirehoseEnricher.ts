@@ -12,9 +12,7 @@ type Data = {
 
 type EnrichedData = Omit<Data, "messageTime"> & {
   date: string;
-  hour: string;
-  minute: string;
-  second: string;
+  timestamp: number;
 };
 
 /**
@@ -68,9 +66,6 @@ function enrich(data: Data): EnrichedData {
   const year = datetime.getFullYear().toString();
   const month = formatTwoDigits(datetime.getMonth() + 1);
   const day = formatTwoDigits(datetime.getDate());
-  const hour = formatTwoDigits(datetime.getHours());
-  const minute = formatTwoDigits(datetime.getMinutes());
-  const second = formatTwoDigits(datetime.getSeconds());
 
   const date = `${year}/${month}/${day}`;
 
@@ -78,9 +73,7 @@ function enrich(data: Data): EnrichedData {
     deviceName,
     metrics,
     date,
-    hour,
-    minute,
-    second,
+    timestamp: messageTime / 1000,
   };
   return enrichedData;
 }
